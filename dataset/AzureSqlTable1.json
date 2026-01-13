@@ -1,0 +1,68 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "BranchId",
+				"type": "varchar"
+			},
+			{
+				"name": "BranchArea",
+				"type": "varchar"
+			},
+			{
+				"name": "productcode",
+				"type": "varchar"
+			},
+			{
+				"name": "Category",
+				"type": "varchar"
+			},
+			{
+				"name": "Category_Code",
+				"type": "varchar"
+			},
+			{
+				"name": "Quantity",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "salesdate",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "InvoiceId",
+				"type": "varchar"
+			},
+			{
+				"name": "PaymentMode",
+				"type": "varchar"
+			},
+			{
+				"name": "SalespersonId",
+				"type": "varchar"
+			},
+			{
+				"name": "manager_name",
+				"type": "varchar"
+			},
+			{
+				"name": "delivery_mode",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Chennai"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

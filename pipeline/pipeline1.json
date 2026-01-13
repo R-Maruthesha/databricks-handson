@@ -1,0 +1,541 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set_input_date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "input_date",
+					"value": "20251227"
+				}
+			},
+			{
+				"name": "Set_month",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_input_date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "month",
+					"value": {
+						"value": "\"value\": \"@formatDateTime(adddays(startOfMonth(utcNow()),-1)'MMMM')\"\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_source",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_month",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "source",
+					"value": "LG"
+				}
+			},
+			{
+				"name": "set_RunID",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_source",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "run_id",
+					"value": {
+						"value": "\"@pipeline().RunId\"",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_pipeline_name",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "set_RunID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pipeline_name",
+					"value": {
+						"value": "\r\n\"@pipeline().Pipeline\"",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_bengaluru",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_pipeline_name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "bengaluru",
+					"value": {
+						"value": "\"@concat('Bangalore_',variables('month'),'_2025.csv')\"",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_chennai",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_pipeline_name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "chennai",
+					"value": {
+						"value": "\"@concat('Chennai_',variables('month'),'_2025.csv')\"",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Copy Bangalore Data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set_bengaluru",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_target",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Copy Chennai Data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set_chennai",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_target",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Get file check",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Copy Bangalore Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy Chennai Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_source",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "File count check",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Get file check",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(length(activity('Get file check').output.childItems), 2)\n",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Web_activity",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"url": {
+									"value": "https://prod-28.northcentralus.logic.azure.com:443/workflows/c5f9563a70a842e29d881f703155264e/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=D6PZFT13Gfmq_pOQ4iFqQ-2HithtA-LvpAWVZAEuK3w",
+									"type": "Expression"
+								},
+								"body": {
+									"value": "{\n  \"pipelineName\": \"@{pipeline().Pipeline}\",\n  \"pipelineRunId\": \"@{pipeline().RunId}\",\n  \"notebook_name\": \"File-check\",\n  \"status\": \"Expected Files Not there\",\n  \"notebook_output\": \"Source_File_check\",\n  \"message\":\"Pipeline got failed because of file does not exist properly in the folder. Could you please have  alook on this issue? \"\n}",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "bronze_layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "File count check",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/maruthesha425@gmail.com/J2d_DataMigration_RawLayer",
+					"baseParameters": {
+						"input_date": {
+							"value": "@variables('input_date')",
+							"type": "Expression"
+						},
+						"month": {
+							"value": "@variables('month')",
+							"type": "Expression"
+						},
+						"source": {
+							"value": "@variables('source')",
+							"type": "Expression"
+						},
+						"RunID": {
+							"value": "@variables('run_id')",
+							"type": "Expression"
+						},
+						"pipeline_name": {
+							"value": "@variables('pipeline_name')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "silver_layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "bronze_layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/maruthesha425@gmail.com/J2d_DataMigration_Silver_Layer",
+					"baseParameters": {
+						"input_date": {
+							"value": "@variables('input_date')",
+							"type": "Expression"
+						},
+						"month": {
+							"value": "@variables('month')",
+							"type": "Expression"
+						},
+						"source": {
+							"value": "@variables('source')",
+							"type": "Expression"
+						},
+						"RunID": {
+							"value": "@variables('run_id')",
+							"type": "Expression"
+						},
+						"pipeline_name": {
+							"value": "@variables('pipeline_name')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Gold_layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "silver_layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/maruthesha425@gmail.com/J2d_DataMigration_Gold_Layer",
+					"baseParameters": {
+						"input_date": {
+							"value": "@variables('input_date')",
+							"type": "Expression"
+						},
+						"month": {
+							"value": "@variables('month')",
+							"type": "Expression"
+						},
+						"source": {
+							"value": "@variables('source')",
+							"type": "Expression"
+						},
+						"RunID": {
+							"value": "@variables('run_id')",
+							"type": "Expression"
+						},
+						"pipeline_name": {
+							"value": "@variables('pipeline_name')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"input_date": {
+				"type": "String"
+			},
+			"month": {
+				"type": "String"
+			},
+			"source": {
+				"type": "String"
+			},
+			"run_id": {
+				"type": "String"
+			},
+			"pipeline_name": {
+				"type": "String"
+			},
+			"bengaluru": {
+				"type": "String"
+			},
+			"chennai": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-01-12T07:16:51Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

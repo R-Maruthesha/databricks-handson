@@ -1,0 +1,9 @@
+{
+	"name": "j2d-real-time-project",
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "12c4d12d-8550-4905-8c6d-649d8a736278",
+		"tenantId": "afc840d8-9d59-401b-a216-cc9f1aafeac4"
+	}
+}
